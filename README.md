@@ -19,7 +19,8 @@ The script may be invoked either on an external stimulus e.g. `Telemetry` or on 
 
 ## Caveats
 
-Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies)
+Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies).
+Requires smartport (e.g. Frsky D16) compatible RX on the aircraft.
 
 ## Copyright and Licence
 
