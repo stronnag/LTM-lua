@@ -19,9 +19,17 @@ The script may be invoked either on an external stimulus e.g. `Telemetry` or on 
 
 Note that the UARTs on the TX16S default to 115200 bps, so set BT devices accordingly.
 
+Note also that in OTX 2.3.9, a bug causes no power to be supplied to the TX16S UARTS; this is fixed in the 2.3.10 nightlies.
+
+### Logging
+
+If the variable LOGGER is set to true,  LTM binary messages written to a LOG/ file (simulator and radio)
+
+In the simulator human readable debug messages are generated unconditionally.
+
 ## Caveats
 
-Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies).
+Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies), internal module.
 Requires smartport (e.g. Frsky D16) compatible RX on the aircraft.
 
 ## Copyright and Licence

@@ -12,73 +12,53 @@
 
 local D = {}
 local lastt = 0
+
 -- Debugging
 local LOGGER = false
 
-local function dolog(str)
-   if LOGGER then
-      if D.fh == nil then
-	 local dt = getDateTime()
-	 local s = ''
-	 if type(dt) == "table" then
-	    s = string.format("/LOGS/%04d%02d%02d%02d%02d%02d.txt",
-			      dt.year, dt.mon, dt.day, dt.hour,dt.min,dt.sec)
-	 else
-	    s = "/LOGS/ltmtst.dat"
-	 end
-	 if D.sim then
-	    print("Open "..s)
-	 end
-	 D.fh = io.open(s,"w")
-      end
-      if D.fh ~= nil then
-	 io.write(D.fh, str, "\n")
-      end
+local function openlog()
+   local dt = getDateTime()
+   local s = ''
+   if type(dt) == "table" then
+      s = string.format("/LOGS/%04d%02d%02d%02d%02d%02d.txt",
+			dt.year, dt.mon, dt.day, dt.hour,dt.min,dt.sec)
+   else
+      s = "/LOGS/ltmtst.dat"
    end
+   if D.sim then
+      print("Open "..s)
+   end
+   fh = io.open(s,"wb")
+   return fh
+end
+
+local function dolog(str)
    if D.sim then
       print(str)
    end
 end
 
-local function dump(binstr)
-   local s=''
+local function mlog(ltm)
+   if LOGGER then
+      D.fh = D.fh or openlog()
+      io.write(D.fh, ltm)
+   end
+end
+
+local function crc(binstr)
+   c= 0
    for i = 1, string.len(binstr), 1 do
-      s = s..string.format("%02x ", string.byte(binstr, i))
-   end
-   dolog(s)
-end
-
-local function t2s(t)
-   local s=''
-   for i=1,#t do
-      s = s..string.char(t[i])
-   end
-   dump(s)
-   return s
-end
-
-local function crc(msg)
-   local c = 0
-   for i = 4, #msg do
-      c = bit32.bxor(msg[i],c)
+      c = bit32.bxor(c, string.byte(binstr, i))
    end
    return c
 end
 
-local function s32(val)
-   b={}
-   b[0] = bit32.band(val,0xFF)
-   b[1] = bit32.band(bit32.rshift(val,8) ,0xFF)
-   b[2] = bit32.band(bit32.rshift(val,16) ,0xFF)
-   b[3] = bit32.band(bit32.rshift(val,24) ,0xFF)
-   return b
+local function s16(val)
+   return string.char( bit32.band(val,0xFF)) .. string.char(bit32.band(bit32.rshift(val,8) ,0xFF))
 end
 
-local function s16(val)
-   b={}
-   b[0] = bit32.band(val,0xFF)
-   b[1] = bit32.band(bit32.rshift(val,8) ,0xFF)
-   return b
+local function s32(val)
+   return string.char( bit32.band(val,0xFF)) .. string.char(bit32.band(bit32.rshift(val,8) ,0xFF)) .. string.char(bit32.band(bit32.rshift(val,16) ,0xFF)) ..  string.char(bit32.band(bit32.rshift(val,24) ,0xFF))
 end
 
 local function ltm_gframe()
@@ -87,131 +67,70 @@ local function ltm_gframe()
    local ispd = math.floor(D.spd)
    local ialt = math.floor(D.alt*100)
    local sbyte = D.nfix + (D.nsats * 4) -- FIXME bitops
-   local msg = {}
-
    if ispd < 0 then
       ispd = 0
    end
-
-   msg[1] = 0x24
-   msg[2] = 0x54
-   msg[3] = string.byte('G')
-   local b = s32(ilat)
-   msg[4] = b[0]
-   msg[5] = b[1]
-   msg[6] = b[2]
-   msg[7] = b[3]
-   b = s32(ilon)
-   msg[8] = b[0]
-   msg[9] = b[1]
-   msg[10] = b[2]
-   msg[11] = b[3]
-   msg[12] = bit32.band(ispd,0xff) -- 12
-   b =s32(ialt)
-   msg[13] = b[0]
-   msg[14] = b[1]
-   msg[15] = b[2]
-   msg[16] = b[3]
-   msg[17] = bit32.band(sbyte,0xff) -- 17
-   msg[18] = crc(msg)
-   local ltm = t2s(msg)
-   serialWrite(ltm)
+   local m = s32(ilat)
+   m = m .. s32(ilon)
+   m = m .. string.char(bit32.band(ispd,0xFF)) -- 12
+   m = m .. s32(ialt)
+   m = m .. string.char(bit32.band(sbyte,0xFF)) -- 17
+   m = m .. string.char(crc(m))
+   m = "$TG"..m
+   serialWrite(m)
+   mlog(m)
 end
 
 local function ltm_sframe(status)
    local vb = math.floor(D.volts*1000)
    local rssi = math.floor(255*D.rssi/100)
    local ispd = math.floor(D.spd)
-
    if ispd < 0 then
       ispd = 0
    end
-
-   local msg = {}
-   msg[1] = 0x24
-   msg[2] = 0x54
-   msg[3] = string.byte('S')
-   local b = s16(vb)
-   msg[4] = b[0]
-   msg[5] = b[1]
-   b = s16(D.mah)
-   msg[6] = b[0]
-   msg[7] = b[1]
-   msg[8] = bit32.band(rssi,0xff)
-   msg[9] = bit32.band(ispd,0xff)
-   msg[10] = bit32.band(status,0xff)
-   msg[11] = crc(msg)
-   local ltm = t2s(msg)
-   serialWrite(ltm)
+   local m = s16(vb)
+   m = m .. s16(D.mah)
+   m = m .. string.char(bit32.band(rssi,0xff))
+   m = m .. string.char(bit32.band(ispd,0xff))
+   m = m .. string.char(bit32.band(status,0xff))
+   m = m .. string.char(crc(m))
+   m = "$TS"..m
+   serialWrite(m)
+   mlog(m)
 end
 
 local function ltm_oframe()
    local ilat = math.floor(D.hlat*1e7)
    local ilon = math.floor(D.hlon*1e7)
-   local msg = {}
-   msg[1] = 0x24
-   msg[2] = 0x54
-   msg[3] = string.byte('O')
-   local b = s32(ilat)
-   msg[4] = b[0]
-   msg[5] = b[1]
-   msg[6] = b[2]
-   msg[7] = b[3]
-   b = s32(ilon)
-   msg[8] = b[0]
-   msg[9] = b[1]
-   msg[10] = b[2]
-   msg[11] = b[3]
-   b = s32(ilon)
-   msg[8] = b[0]
-   msg[9] = b[1]
-   msg[10] = b[2]
-   msg[11] = b[3]
-   msg[12] = 0
-   msg[13] = 0
-   msg[14] = 0
-   msg[15] = 0
-   msg[16] = bit32.band(1,0xff)
-   msg[17] = bit32.band(D.nfix,0xff)
-   msg[18] = crc(msg)
-   local ltm = t2s(msg)
-   serialWrite(ltm)
+   local m = s32(ilat)
+   m = m .. s32(ilon)
+   m = m .. "\000\000\000\000\001"
+   m = m .. string.char(bit32.band(D.nfix,0xff))
+   m = m .. string.char(crc(m))
+   m = "$TO"..m
+   serialWrite(m)
+   mlog(m)
 end
 
 local function ltm_aframe()
-   local msg = {}
-   msg[1] = 0x24
-   msg[2] = 0x54
-   msg[3] = string.byte('A')
-   local b = s16(D.pitch)
-   msg[4] = b[0]
-   msg[5] = b[1]
-   b = s16(D.roll)
-   msg[6] = b[0]
-   msg[7] = b[1]
-   b = s16(D.hdg)
-   msg[8] = b[0]
-   msg[9] = b[1]
-   msg[10] = crc(msg)
-   local ltm = t2s(msg)
-   serialWrite(ltm)
+   local m = s16(D.pitch)
+   m = m .. s16(D.roll)
+   m = m .. s16(D.hdg)
+   m = m .. string.char(crc(m))
+   m = "$TA"..m
+   serialWrite(m)
+   mlog(m)
 end
 
 local function ltm_xframe()
-   local msg = {}
-   msg[1] = 0x24
-   msg[2] = 0x54
-   msg[3] = string.byte('X')
-   b = s16(D.hdop)
-   msg[4] = b[0]
-   msg[5] = b[1]
-   msg[6] = bit32.band(0,0xff)
-   msg[7] = bit32.band(D.xcount,0xff)
-   msg[8] = bit32.band(0,0xff)
-   msg[9] = bit32.band(0,0xff)
-   msg[10] = crc(msg)
-   local ltm = t2s(msg)
-   serialWrite(ltm)
+   local m = s16(D.hdop)
+   m = m .. '\000'
+   m = m .. string.char(bit32.band(D.xcount,0xff))
+   m = m .. "\000\000"
+   m = m .. string.char(crc(m))
+   m = "$TX"..m
+   serialWrite(m)
+   mlog(m)
 end
 
 local function getTelemetryId(n)
@@ -251,21 +170,10 @@ local function send_gframe()
 	 D.have_home = true
       end
    end
---[[
-   if bit32.band(gfix, 4) then
-      dolog("SAT_ID RESET home with have_home = "..tostring(D.have_home))
-
-      if D.have_home == true then
-	 D.hlat = D.lat
-	 D.hlon = D.lon
-      end
-   end
-]]--
    local hdp = (val % 1000)/100
    D.hdop = 550 - (hdp * 50)
 
-   dolog(string.format("GFrame: Lat %.6f Lon %.6f Alt %.2f Spd %.1f fix %d sats %d hdop %d",
-		       D.lat, D.lon, D.alt, D.spd, D.nfix, D.nsats, D.hdop))
+   dolog(string.format("GFrame: Lat %.6f Lon %.6f Alt %.2f Spd %.1f fix %d sats %d hdop %d",		       D.lat, D.lon, D.alt, D.spd, D.nfix, D.nsats, D.hdop))
    ltm_gframe()
 end
 
@@ -288,9 +196,9 @@ local function get_ltm_status()
 	 D.have_home = false
       end
    end
-   if D.armed ~= armed then
-      dolog("Armed State change "..armed)
-   end
+
+   if D.armed ~= armed then dolog("Armed State change "..armed)  end
+
    D.armed = armed
 
    if modeT == 0 then
@@ -330,8 +238,7 @@ local function send_sframe()
    D.mah = getValue(D.curr_id) or 0
    local status = get_ltm_status()
    local ival = getValue(D.mode_id)
-   dolog(string.format("SFrame: Volts %.1f mah %.1f rssi %d air %1.f mode %d status %02x",
-		       D.volts, D.mah, D.rssi, D.spd, ival, status))
+   dolog(string.format("SFrame: Volts %.1f mah %.1f rssi %d air %1.f mode %d status %02x", D.volts, D.mah, D.rssi, D.spd, ival, status))
    ltm_sframe(status)
 end
 
@@ -359,7 +266,7 @@ local function send_xframe()
 end
 
 local function send_nframe()
-   dolog("Nframe")
+--   dolog("Nframe")
 end
 
 local function send_oframe()
