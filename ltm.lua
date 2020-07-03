@@ -3,12 +3,13 @@
 -- Designed for the Radiomaster TX16S UART set to 'LUA' and invoked via
 -- either a Global or Special Function
 --
--- LTM can be used in INAV compatible ground stations such as mwp, eagui or mw4i
+-- LTM can be used in INAV compatible ground stations such as mwp, ezgui or
+--  mission planner for inav
 --
 -- Licence : GPL 3 or later
 --
 -- (c) Jonathan Hudson 2020
-  ]]--
+]]--
 
 local D = {}
 local lastt = 0
@@ -66,7 +67,7 @@ local function ltm_gframe()
    local ilon = math.floor(D.lon*1e7)
    local ispd = math.floor(D.spd)
    local ialt = math.floor(D.alt*100)
-   local sbyte = D.nfix + (D.nsats * 4) -- FIXME bitops
+   local sbyte = bit32.bor(D.nfix, bit32.lshift(D.nsats,2))
    if ispd < 0 then
       ispd = 0
    end
@@ -187,6 +188,7 @@ local function get_ltm_status()
    local modeT = math.floor((ival % 100) / 10)
    local modeH = math.floor((ival % 1000) / 100)
    local modeK = math.floor((ival % 10000) / 1000)
+   local modeJ = math.floor(ival / 10000)
 
    if bit32.band(modeU, 4) == 4 then
       armed = 1
@@ -229,7 +231,7 @@ local function get_ltm_status()
       failsafe = 2
    end
 
-   local status = armed + failsafe + (ltmflags * 4)
+   local status = bit32.bor(armed, failsafe, bit32.lshift(ltmflags,2))
    return status
 end
 
