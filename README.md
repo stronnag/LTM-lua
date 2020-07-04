@@ -21,9 +21,14 @@ Note that the UARTs on the TX16S default to 115200 bps, so set BT devices accord
 
 Note also that in OTX 2.3.9, a bug causes no power to be supplied to the TX16S UARTS; this is fixed in the 2.3.10 nightlies.
 
+## Audio
+
+The `audio` directory contains two synthesised voice files, `ltmon.wav` and `ltmoff.wav` that may be placed in `SOUNDS/en` and used to provide audible indications (via Special Functions) that LTM forwarding is enabled / disabled.
+
+
 ### Logging
 
-If the variable LOGGER is set to true,  LTM binary messages written to a LOG/ file (simulator and radio)
+If the variable LOGGER is set to true,  LTM binary messages written to a LOG/ file (simulator and radio). It is not advised to do this on the radio.
 
 In the simulator human readable debug messages are generated unconditionally.
 
