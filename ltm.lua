@@ -65,7 +65,7 @@ end
 local function ltm_gframe()
    local ilat = math.floor(D.lat*1e7)
    local ilon = math.floor(D.lon*1e7)
-   local ispd = math.floor(D.spd)
+   local ispd = math.floor(D.gspd)
    local ialt = math.floor(D.alt*100)
    local sbyte = bit32.bor(D.nfix, bit32.lshift(D.nsats,2))
    if ispd < 0 then
@@ -85,9 +85,14 @@ end
 local function ltm_sframe(status)
    local vb = math.floor(D.volts*1000)
    local rssi = math.floor(255*D.rssi/100)
-   local ispd = math.floor(D.spd)
+   local ispd
+
+   isp= math.floor(D.vspd)
    if ispd < 0 then
-      ispd = 0
+      ispd = math.floor(D.gspd)
+      if ispd < 0 then
+	 ispd = 0
+      end
    end
    local m = s16(vb)
    m = m .. s16(D.mah)
@@ -147,7 +152,8 @@ local function send_gframe()
       D.lon = gps.lon
    end
    D.alt = getValue(D.alt_id) or 0
-   D.spd = getValue(D.spd_id) or 0
+   D.gspd = getValue(D.gspd_id) or -1
+   D.vspd = getValue(D.vspd_id) or -1
 
    local val = getValue(D.sat_id) or 0
    D.nsats = val % 100
@@ -174,7 +180,7 @@ local function send_gframe()
    local hdp = (val % 1000)/100
    D.hdop = 550 - (hdp * 50)
 
-   dolog(string.format("GFrame: Lat %.6f Lon %.6f Alt %.2f Spd %.1f fix %d sats %d hdop %d",		       D.lat, D.lon, D.alt, D.spd, D.nfix, D.nsats, D.hdop))
+   dolog(string.format("GFrame: Lat %.6f Lon %.6f Alt %.2f Spd %.1f fix %d sats %d hdop %d",		       D.lat, D.lon, D.alt, D.gspd, D.nfix, D.nsats, D.hdop))
    ltm_gframe()
 end
 
@@ -213,10 +219,10 @@ local function get_ltm_status()
       ltmflags = 0 -- Manual
    end
 
-   if bit32.band(modeH, 2) == 2 then
-      ltmflags = 8 -- Alt Hold
-   elseif bit32.band(modeH, 4) == 4 then
+   if bit32.band(modeH, 4) == 4 then
       ltmflags = 9 -- PH
+   elseif bit32.band(modeH, 2) == 2 then
+      ltmflags = 8 -- Alt Hold
    end
 
    if modeK == 1 then
@@ -240,7 +246,7 @@ local function send_sframe()
    D.mah = getValue(D.curr_id) or 0
    local status = get_ltm_status()
    local ival = getValue(D.mode_id)
-   dolog(string.format("SFrame: Volts %.1f mah %.1f rssi %d air %1.f mode %d status %02x", D.volts, D.mah, D.rssi, D.spd, ival, status))
+   dolog(string.format("SFrame: Volts %.1f mah %.1f rssi %d air %1.f mode %d status %02x", D.volts, D.mah, D.rssi, D.vspd, ival, status))
    ltm_sframe(status)
 end
 
@@ -289,12 +295,14 @@ local function init()
       gps_id = getTelemetryId("GPS"),
       hdg_id = getTelemetryId("Hdg"),
       curr_id = getTelemetryId("Curr"),
-      spd_id = getTelemetryId("VSpd"),
+      gspd_id = getTelemetryId("GSpd"),
+      vspd_id = getTelemetryId("VSpd"),
       have_home = false,
       lat  = 0,
       lon = 0,
       alt = 0,
-      spd = 0,
+      gspd = 0,
+      vspd = 0,
       nsats = 0,
       nfix = 0,
       hlat = 0,
@@ -338,12 +346,13 @@ end
 
 -- Main
 local function run(event)
-   if D.gps_id > -1 then
+   if D.gps_id ~= nil then
       local timenow = getTime()
       local tdif = timenow - lastt
       if tdif > 9 then
 	 lastt = timenow
-	 local rssi = getRSSI()
+	 local rssi,r0,r1
+	    rssi, r0, r1 = getRSSI()
 	 if rssi ~= nil then
 	    D.rssi = rssi
 	    send_aframe()

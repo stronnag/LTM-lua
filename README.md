@@ -25,7 +25,6 @@ Note also that in OTX 2.3.9, a bug causes no power to be supplied to the TX16S U
 
 The `audio` directory contains two synthesised voice files, `ltmon.wav` and `ltmoff.wav` that may be placed in `SOUNDS/en` and used to provide audible indications (via Special Functions) that LTM forwarding is enabled / disabled.
 
-
 ### Logging
 
 If the variable LOGGER is set to true,  LTM binary messages written to a LOG/ file (simulator and radio). It is not advised to do this on the radio.
@@ -36,6 +35,8 @@ In the simulator human readable debug messages are generated unconditionally.
 
 Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies), internal module.
 Requires smartport (e.g. Frsky D16) compatible RX on the aircraft.
+
+Other OpenTX compatible radios and other RX radio systems (R9,CRSF) are NOT tested and as I don't have such hardware may not work.
 
 ## Copyright and Licence
 
