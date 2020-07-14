@@ -155,9 +155,6 @@ local function send_gframe()
    end
    if D.crsf then
       C.alt_speed(D)
-      -- calc
-      -- set gsod
-      -- set vsod
    else
       D.alt = getValue(D.alt_id) or 0
       D.gspd = getValue(D.gspd_id) or 0

@@ -15,7 +15,7 @@ local function calc_speed(D)
    local spd = 0
    local tdiff = 0
    local now = getTime()
-   if C.lastt > 0  && C.llat ~= 0 && .Cllon ~= 0 then
+   if C.lastt > 0  and C.llat ~= 0 and C.llon ~= 0 then
       tdiff = now - C.lastt
       if tdiff > 0 then
 	 -- Flat earth
@@ -42,11 +42,11 @@ function C.get_status_info(D)
       if thr < -800 then
 	 armed = 0
       end
-   elseif fm == "OK" || fm == "WAIT" || fm == "!ERR" then
+   elseif fm == "OK" or fm == "WAIT" or fm == "!ERR" then
       armed = 0
-   elseif fm == "ACRO" || fm == "AIR" then
+   elseif fm == "ACRO" or fm == "AIR" then
       ltmmode = 4
-   elseif fm == "ANGL" || fm == "STAB" then
+   elseif fm == "ANGL" or fm == "STAB" then
       ltmmode = 2
    elseif fm == "HOR" then
       ltmmode = 3
@@ -56,7 +56,7 @@ function C.get_status_info(D)
       ltmmode = 8
    elseif fm == "HOLD" then
       ltmmode = 9
-   elseif fm == "CRS" || fm == "3CRS" then
+   elseif fm == "CRS" or fm == "3CRS" then
       ltmmode = 18
    elseif fm == "WP" then
       ltmmode = 10
