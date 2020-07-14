@@ -12,6 +12,7 @@
 ]]--
 
 local D = {}
+local C = {}
 local lastt = 0
 
 -- Debugging
@@ -73,9 +74,9 @@ local function ltm_gframe()
    end
    local m = s32(ilat)
    m = m .. s32(ilon)
-   m = m .. string.char(bit32.band(ispd,0xFF)) -- 12
+   m = m .. string.char(bit32.band(ispd,0xFF))
    m = m .. s32(ialt)
-   m = m .. string.char(bit32.band(sbyte,0xFF)) -- 17
+   m = m .. string.char(bit32.band(sbyte,0xFF))
    m = m .. string.char(crc(m))
    m = "$TG"..m
    serialWrite(m)
@@ -88,6 +89,7 @@ local function ltm_sframe(status)
    local ispd
 
    isp= math.floor(D.vspd)
+   local ialt = math.floor(D.alt*100)
    if ispd < 0 then
       ispd = math.floor(D.gspd)
       if ispd < 0 then
@@ -151,23 +153,41 @@ local function send_gframe()
       D.lat = gps.lat
       D.lon = gps.lon
    end
-   D.alt = getValue(D.alt_id) or 0
-   D.gspd = getValue(D.gspd_id) or -1
-   D.vspd = getValue(D.vspd_id) or -1
-
-   local val = getValue(D.sat_id) or 0
-   D.nsats = val % 100
-   local gfix = val / 1000
-   if bit32.band(gfix, 1) then
-      if D.nsats > 4 then
-	 D.nfix = 3
-      elseif D.nsats > 0 then
-	 D.nfix = 1
-      else
-	 D.nfix = 0
-      end
+   if D.crsf then
+      C.alt_speed(D)
+      -- calc
+      -- set gsod
+      -- set vsod
+   else
+      D.alt = getValue(D.alt_id) or 0
+      D.gspd = getValue(D.gspd_id) or 0
+      D.vspd = getValue(D.vspd_id) or 0
+      -- knots to m/s
+      D.gspd = D.gspd * 0.51444
+      D.vspd = D.vspd * 0.51444
    end
 
+   if D.crsf then
+      C.get_sat_info(D)
+      -- get crsf data
+      -- set D.nsats
+      -- set D.nfix
+   else
+      local val = getValue(D.sat_id) or 0
+      D.nsats = val % 100
+      local gfix = val / 1000
+      if bit32.band(gfix, 1) then
+	 if D.nsats > 4 then
+	    D.nfix = 3
+	 elseif D.nsats > 0 then
+	    D.nfix = 1
+	 else
+	    D.nfix = 0
+	 end
+      end
+      local hdp = (val % 1000)/100
+      D.hdop = 550 - (hdp * 50)
+   end
    if bit32.band(gfix, 2) then
       dolog("SAT_ID SET home with have_home = "..tostring(D.have_home))
       if D.armed == 1 and D.have_home == false then
@@ -177,8 +197,6 @@ local function send_gframe()
 	 D.have_home = true
       end
    end
-   local hdp = (val % 1000)/100
-   D.hdop = 550 - (hdp * 50)
 
    dolog(string.format("GFrame: Lat %.6f Lon %.6f Alt %.2f Spd %.1f fix %d sats %d hdop %d",		       D.lat, D.lon, D.alt, D.gspd, D.nfix, D.nsats, D.hdop))
    ltm_gframe()
@@ -188,8 +206,8 @@ local function get_ltm_status()
    local armed = 0
    local failsafe = 0
    local ltmflags = 0
-   local ival = getValue(D.mode_id)
 
+   local ival = getValue(D.mode_id)
    local modeU = math.floor(ival % 10)
    local modeT = math.floor((ival % 100) / 10)
    local modeH = math.floor((ival % 1000) / 100)
@@ -236,32 +254,40 @@ local function get_ltm_status()
    if modeJ == 4 then
       failsafe = 2
    end
-
    local status = bit32.bor(armed, failsafe, bit32.lshift(ltmflags,2))
    return status
 end
 
 local function send_sframe()
-   D.volts = getValue(D.volt_id)
+   local status = 0
+   D.volts = getValue(D.volt_id) or 0
    D.mah = getValue(D.curr_id) or 0
-   local status = get_ltm_status()
-   local ival = getValue(D.mode_id)
-   dolog(string.format("SFrame: Volts %.1f mah %.1f rssi %d air %1.f mode %d status %02x", D.volts, D.mah, D.rssi, D.vspd, ival, status))
+   if D.crsf then
+      status = C.get_status_info(D)
+   else
+      status = get_ltm_status()
+   end
+   dolog(string.format("SFrame: Volts %.1f mah %.1f rssi %d air %1.f status %02x", D.volts, D.mah, D.rssi, D.vspd, status))
    ltm_sframe(status)
 end
 
 local function send_aframe()
-   if D.useacc then
-      local accx = getValue(D.accx_id) or 0
-      local accy = getValue(D.accy_id) or 0
-      local accz = getValue(D.accz_id) or 0
-      D.pitch = math.deg(math.atan2(accx * (accz >= 0 and -1 or 1), math.sqrt(accy * accy + accz * accz)))
-      D.roll = math.deg(math.atan2(accy * (accz >= 0 and 1 or -1), math.sqrt(accx * accx + accz * accz)))
+   if D.crsf then
+      C.get_attitude(D)
+      -- set D.pitch, D.roll, D.hdg
    else
-      local v_pitch = getValue(D.pitch_id)
-      local v_roll = getValue(D.roll_id)
-      D.pitch = (math.abs(v_roll) > 900 and -1 or 1) * (270 - v_pitch * 0.1) % 180
-      D.roll = (270 - data.roll * 0.1) % 180
+      if D.useacc then
+	 local accx = getValue(D.accx_id) or 0
+	 local accy = getValue(D.accy_id) or 0
+	 local accz = getValue(D.accz_id) or 0
+	 D.pitch = math.deg(math.atan2(accx * (accz >= 0 and -1 or 1), math.sqrt(accy * accy + accz * accz)))
+	 D.roll = math.deg(math.atan2(accy * (accz >= 0 and 1 or -1), math.sqrt(accx * accx + accz * accz)))
+      else
+	 local v_pitch = getValue(D.pitch_id)
+	 local v_roll = getValue(D.roll_id)
+	 D.pitch = (math.abs(v_roll) > 900 and -1 or 1) * (270 - v_pitch * 0.1) % 180
+	 D.roll = (270 - data.roll * 0.1) % 180
+      end
    end
    dolog(string.format("AFrame: pitch %d roll %d heading %d", D.pitch, D.roll, D.hdg))
    ltm_aframe()
@@ -317,30 +343,38 @@ local function init()
       hdop = 999,
       sim = false,
       armed = 0,
+      crsf = false,
+      fm_id = getTelemetryId("FM")
    }
-   if D.gps_id > -1 then
-      local pitchRoll = ((getTelemetryId("0430") > -1 or getTelemetryId("0008") > -1 or getTelemetryId("Ptch") > -1) and (getTelemetryId("0440") > -1 or getTelemetryId("0020") > -1 or getTelemetryId("Roll") > -1))
-      if pitchRoll then
-	 local pitchSensor = getTelemetryId("Ptch") > -1 and "Ptch" or (getTelemetryId("0430") > -1 and "0430" or "0008")
-	 local rollSensor = getTelemetryId("Roll") > -1 and "Roll" or (getTelemetryId("0440") > -1 and "0440" or "0020")
-	 D.pitch_id = getTelemetryId(pitchSensor)
-	 D.roll_id = getTelemetryId(rollSensor)
-      else
-	 D.accx_id = getTelemetryId("AccX")
-	 D.accy_id = getTelemetryId("AccY")
-	 D.accz_id = getTelemetryId("AccZ")
-	 D.useacc = true
+
+   if D.fm_id > -1 then
+      D.crsf = true
+      C = loadScript("LTM/crsf.lua")(D,getTelemetryId)
+   else
+      if D.gps_id > -1 then
+	 local pitchRoll = ((getTelemetryId("0430") > -1 or getTelemetryId("0008") > -1 or getTelemetryId("Ptch") > -1) and (getTelemetryId("0440") > -1 or getTelemetryId("0020") > -1 or getTelemetryId("Roll") > -1))
+	 if pitchRoll then
+	    local pitchSensor = getTelemetryId("Ptch") > -1 and "Ptch" or (getTelemetryId("0430") > -1 and "0430" or "0008")
+	    local rollSensor = getTelemetryId("Roll") > -1 and "Roll" or (getTelemetryId("0440") > -1 and "0440" or "0020")
+	    D.pitch_id = getTelemetryId(pitchSensor)
+	    D.roll_id = getTelemetryId(rollSensor)
+	 else
+	    D.accx_id = getTelemetryId("AccX")
+	    D.accy_id = getTelemetryId("AccY")
+	    D.accz_id = getTelemetryId("AccZ")
+	    D.useacc = true
+	 end
+	 if string.sub(r, -4) == "simu" then
+	    D.sim = true
+	 end
+	 dolog("vid".." "..D.volt_id)
+	 dolog("sat".." "..D.sat_id)
+	 dolog("mode".." "..D.mode_id)
+	 dolog("alt".." "..D.alt_id)
+	 dolog("gps".." "..D.gps_id)
+	 dolog("hdr".." "..D.hdg_id)
+	 dolog("curr".." "..D.curr_id)
       end
-      if string.sub(r, -4) == "simu" then
-	 D.sim = true
-      end
-      dolog("vid".." "..D.volt_id)
-      dolog("sat".." "..D.sat_id)
-      dolog("mode".." "..D.mode_id)
-      dolog("alt".." "..D.alt_id)
-      dolog("gps".." "..D.gps_id)
-      dolog("hdr".." "..D.hdg_id)
-      dolog("curr".." "..D.curr_id)
    end
 end
 
