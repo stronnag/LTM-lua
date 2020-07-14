@@ -166,9 +166,6 @@ local function send_gframe()
 
    if D.crsf then
       C.get_sat_info(D)
-      -- get crsf data
-      -- set D.nsats
-      -- set D.nfix
    else
       local val = getValue(D.sat_id) or 0
       D.nsats = val % 100
