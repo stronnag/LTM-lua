@@ -37,6 +37,8 @@ function C.get_status_info(D)
    local fs = 0
    local ltmmode = 0
 
+   -- RSSI different from getRSSI?
+   -- D.rssi = getValue(D.rssi_id)
    if fm == "0" then
       local thr = getValue(D.thr_id)
       if thr < -800 then
@@ -66,7 +68,7 @@ function C.get_status_info(D)
       fs = 2
    end
 
-   local status = bit32.bor(armed, fs, bit32.lshift(ltmflags,2))
+   local status = bit32.bor(armed, fs, bit32.lshift(ltmmode,2))
    return status
 end
 
@@ -84,7 +86,7 @@ function C.get_sat_info(D)
       if D.hdop < 50 then
 	 D.hdop = 50
       end
-   elseif ns > 0 then
+   elseif D.nsats > 0 then
       D.nfix = 1
       D.hdop = 800
    else

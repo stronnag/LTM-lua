@@ -88,7 +88,7 @@ local function ltm_sframe(status)
    local rssi = math.floor(255*D.rssi/100)
    local ispd
 
-   isp= math.floor(D.vspd)
+   ispd = math.floor(D.vspd)
    local ialt = math.floor(D.alt*100)
    if ispd < 0 then
       ispd = math.floor(D.gspd)
@@ -181,17 +181,14 @@ local function send_gframe()
       end
       local hdp = (val % 1000)/100
       D.hdop = 550 - (hdp * 50)
-   end
-   if bit32.band(gfix, 2) then
-      dolog("SAT_ID SET home with have_home = "..tostring(D.have_home))
-      if D.armed == 1 and D.have_home == false then
-	 D.hlat = D.lat
-	 D.hlon = D.lon
-	 dolog("Setting home "..D.hlat.." "..D.hlon)
-	 D.have_home = true
+      if bit32.band(gfix, 2) then
+	 if D.armed == 1 and D.have_home == false then
+	    D.hlat = D.lat
+	    D.hlon = D.lon
+	    D.have_home = true
+	 end
       end
    end
-
    dolog(string.format("GFrame: Lat %.6f Lon %.6f Alt %.2f Spd %.1f fix %d sats %d hdop %d",		       D.lat, D.lon, D.alt, D.gspd, D.nfix, D.nsats, D.hdop))
    ltm_gframe()
 end
@@ -341,40 +338,43 @@ local function init()
       fm_id = getTelemetryId("FM")
    }
 
+   if string.sub(r, -4) == "simu" then
+      D.sim = true
+   end
+   -- Testing Crossfire
+   -- if D.sim then D.fm_id = 1 end
+
    if D.fm_id > -1 then
       D.crsf = true
-      C = loadScript("LTM/crsf.lua")(D,getTelemetryId)
+      C = loadScript("/SCRIPTS/FUNCTIONS/LTM/crsf.lua")(D,getTelemetryId)
+      dolog("Loaded CROSSFIRE")
    else
-      if D.gps_id > -1 then
-	 local pitchRoll = ((getTelemetryId("0430") > -1 or getTelemetryId("0008") > -1 or getTelemetryId("Ptch") > -1) and (getTelemetryId("0440") > -1 or getTelemetryId("0020") > -1 or getTelemetryId("Roll") > -1))
-	 if pitchRoll then
-	    local pitchSensor = getTelemetryId("Ptch") > -1 and "Ptch" or (getTelemetryId("0430") > -1 and "0430" or "0008")
-	    local rollSensor = getTelemetryId("Roll") > -1 and "Roll" or (getTelemetryId("0440") > -1 and "0440" or "0020")
-	    D.pitch_id = getTelemetryId(pitchSensor)
-	    D.roll_id = getTelemetryId(rollSensor)
-	 else
-	    D.accx_id = getTelemetryId("AccX")
-	    D.accy_id = getTelemetryId("AccY")
-	    D.accz_id = getTelemetryId("AccZ")
-	    D.useacc = true
-	 end
-	 if string.sub(r, -4) == "simu" then
-	    D.sim = true
-	 end
-	 dolog("vid".." "..D.volt_id)
-	 dolog("sat".." "..D.sat_id)
-	 dolog("mode".." "..D.mode_id)
-	 dolog("alt".." "..D.alt_id)
-	 dolog("gps".." "..D.gps_id)
-	 dolog("hdr".." "..D.hdg_id)
-	 dolog("curr".." "..D.curr_id)
+      local pitchRoll = ((getTelemetryId("0430") > -1 or getTelemetryId("0008") > -1 or getTelemetryId("Ptch") > -1) and (getTelemetryId("0440") > -1 or getTelemetryId("0020") > -1 or getTelemetryId("Roll") > -1))
+      if pitchRoll then
+	 local pitchSensor = getTelemetryId("Ptch") > -1 and "Ptch" or (getTelemetryId("0430") > -1 and "0430" or "0008")
+	 local rollSensor = getTelemetryId("Roll") > -1 and "Roll" or (getTelemetryId("0440") > -1 and "0440" or "0020")
+	 D.pitch_id = getTelemetryId(pitchSensor)
+	 D.roll_id = getTelemetryId(rollSensor)
+      else
+	 D.accx_id = getTelemetryId("AccX")
+	 D.accy_id = getTelemetryId("AccY")
+	 D.accz_id = getTelemetryId("AccZ")
+	 D.useacc = true
       end
+      dolog("Using Smartport")
    end
+   dolog("vid".." "..D.volt_id)
+   dolog("sat".." "..D.sat_id)
+   dolog("mode".." "..D.mode_id)
+   dolog("alt".." "..D.alt_id)
+   dolog("gps".." "..D.gps_id)
+   dolog("hdr".." "..D.hdg_id)
+   dolog("curr".." "..D.curr_id)
 end
 
 -- Main
 local function run(event)
-   if D.gps_id ~= nil then
+   if D.gps_id > -1 then
       local timenow = getTime()
       local tdif = timenow - lastt
       if tdif > 9 then
