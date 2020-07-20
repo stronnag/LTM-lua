@@ -8,12 +8,23 @@ Typical use case:
 
 * Radiomaster TX16S radio (which has two normal / not inverted UARTS)
 * Bluetooth module attached to a radio UART
-* LTM aware ground station [mwp](https://github.com/stronnag/mwptools), ezgui, "mission planner for inav".
+* LTM aware ground station [mwp](https://github.com/stronnag/mwptools), ezgui, "mission planner for inav"
+* Antenna tracker that uses LTM.
 
 ## Installation and Usage
 
 * Copy the script `ltm.lua` to the `SCRIPTS/FUNCTIONS' directory
+* Create a directory, `SCRIPTS/FUNCTIONS/LTM`; copy the file LTM/crsf.lua to that directory, such that the following directory structure is maintained; in particular `crsf.lua` is the `LTM` sub-directory:
+```
+    ├── SCRIPTS
+    │   ├── FUNCTIONS
+    │   │   ├── ltm.lua
+    │   │   ├── LTM
+    │   │   │   ├── crsf.lua
+```
 * Enable the script as a Global Function or model specific Special Function.
+
+Note that any Zip files in the release area will maintain this structure.
 
 The script may be invoked either on an external stimulus e.g. `Telemetry` or on a switch. See the OpenTX / TX vendor documentation for details on configuring your radio.
 
@@ -36,7 +47,9 @@ In the simulator human readable debug messages are generated unconditionally.
 Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies), internal module.
 Requires smartport (e.g. Frsky D16) compatible RX on the aircraft.
 
-Other OpenTX compatible radios and other RX radio systems (R9,CRSF) are NOT tested and as I don't have such hardware may not work.
+The scripts have also been tested using Crossfire with Taranis x9D+se, OpenTX 2.3 +luac, full Crossfire TX, Nano RX and the [u360gts antenna tracker](https://github.com/raul-ortega/u360gts).
+
+Other OpenTX compatible radios and other RX radio systems (e.g. R9) are NOT tested and as I don't have such hardware, may not work.
 
 ## Copyright and Licence
 
