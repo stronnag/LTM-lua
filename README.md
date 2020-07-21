@@ -14,23 +14,30 @@ Typical use case:
 ## Installation and Usage
 
 * Copy the script `ltm.lua` to the `SCRIPTS/FUNCTIONS' directory
-* Create a directory, `SCRIPTS/FUNCTIONS/LTM`; copy the file LTM/crsf.lua to that directory, such that the following directory structure is maintained; in particular `crsf.lua` is the `LTM` sub-directory:
+* Create a directory, `SCRIPTS/FUNCTIONS/LTM`; copy the files `LTM/crsf.lua` and `LTM/config.lua` to that directory, such that the following directory structure is maintained.
 ```
     ├── SCRIPTS
     │   ├── FUNCTIONS
     │   │   ├── ltm.lua
     │   │   ├── LTM
     │   │   │   ├── crsf.lua
+    │   │   │   ├── config.lua
 ```
 * Enable the script as a Global Function or model specific Special Function.
 
-Note that any Zip files in the release area will maintain this structure.
+Note that any Zip files in the release area will profile this directory structure.
 
 The script may be invoked either on an external stimulus e.g. `Telemetry` or on a switch. See the OpenTX / TX vendor documentation for details on configuring your radio.
 
 Note that the UARTs on the TX16S default to 115200 bps, so set BT devices accordingly.
 
 Note also that in OTX 2.3.9, a bug causes no power to be supplied to the TX16S UARTS; this is fixed in the 2.3.10 nightlies.
+
+## Configuration
+
+There are a few user editable settings in the file `LTM/config.lua`; currently the user must edit this file directly as no radio UI is provdied.
+
+In particular, the `onlyTracker` setting may be used to provide only GPS data for antenna trackers. See the comments in  `LTM/config.lua` for details.
 
 ## Audio
 

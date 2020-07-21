@@ -1,3 +1,18 @@
+--[[
+-- inav FrSky / CRSF Telemetry to LTM
+-- Designed for the Radiomaster TX16S UART set to 'LUA' and invoked via
+-- either a Global or Special Function
+--
+-- LTM can be used in INAV compatible ground stations such as mwp, ezgui or
+--  mission planner for inav, as well as antenna trackers e.g u360gts
+--
+-- Licence : GPL 3 or later
+--
+-- (c) Jonathan Hudson 2020
+-- https://github.com/stronnag/LTM-lua/
+--
+]]--
+
 local D,getTelemetryId = ...
 local C={}
 

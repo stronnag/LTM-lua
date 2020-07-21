@@ -4,19 +4,23 @@
 -- either a Global or Special Function
 --
 -- LTM can be used in INAV compatible ground stations such as mwp, ezgui or
---  mission planner for inav
+--  mission planner for inav, as well as antenna trackers e.g u360gts
 --
 -- Licence : GPL 3 or later
 --
 -- (c) Jonathan Hudson 2020
+-- https://github.com/stronnag/LTM-lua/
+--
 ]]--
 
+-- User editable settings -- see LTM/config.lua
+local S = {}
+-- Common data
 local D = {}
+-- CRSF specific data and functions
 local C = {}
-local lastt = 0
 
--- Debugging
-local LOGGER = false
+local lastt = 0
 
 local function openlog()
    local dt = getDateTime()
@@ -41,7 +45,7 @@ local function dolog(str)
 end
 
 local function mlog(ltm)
-   if LOGGER then
+   if S.LOGGER then
       D.fh = D.fh or openlog()
       io.write(D.fh, ltm)
    end
@@ -189,7 +193,7 @@ local function send_gframe()
 	 end
       end
    end
-   dolog(string.format("GFrame: Lat %.6f Lon %.6f Alt %.2f Spd %.1f fix %d sats %d hdop %d",		       D.lat, D.lon, D.alt, D.gspd, D.nfix, D.nsats, D.hdop))
+   dolog(string.format("\nGFrame: Lat %.6f Lon %.6f Alt %.2f Spd %.1f fix %d sats %d hdop %d",		       D.lat, D.lon, D.alt, D.gspd, D.nfix, D.nsats, D.hdop))
    ltm_gframe()
 end
 
@@ -280,7 +284,7 @@ local function send_aframe()
 	 D.roll = (270 - data.roll * 0.1) % 180
       end
    end
-   dolog(string.format("AFrame: pitch %d roll %d heading %d", D.pitch, D.roll, D.hdg))
+   dolog(string.format("\nAFrame: pitch %d roll %d heading %d", D.pitch, D.roll, D.hdg))
    ltm_aframe()
 end
 
@@ -341,6 +345,9 @@ local function init()
    if string.sub(r, -4) == "simu" then
       D.sim = true
    end
+
+   S = loadScript("/SCRIPTS/FUNCTIONS/LTM/config.lua")()
+   dolog("Tracker only " .. string.format("%s",S.onlyTracker))
    -- Testing Crossfire
    -- if D.sim then D.fm_id = 1 end
 
@@ -363,13 +370,13 @@ local function init()
       end
       dolog("Using Smartport")
    end
-   dolog("vid".." "..D.volt_id)
-   dolog("sat".." "..D.sat_id)
-   dolog("mode".." "..D.mode_id)
-   dolog("alt".." "..D.alt_id)
-   dolog("gps".." "..D.gps_id)
-   dolog("hdr".." "..D.hdg_id)
-   dolog("curr".." "..D.curr_id)
+   dolog("vid  "..D.volt_id)
+   dolog("sat  "..D.sat_id)
+   dolog("mode "..D.mode_id)
+   dolog("alt "..D.alt_id)
+   dolog("gps "..D.gps_id)
+   dolog("hdr "..D.hdg_id)
+   dolog("curr "..D.curr_id)
 end
 
 -- Main
@@ -383,17 +390,25 @@ local function run(event)
 	    rssi, r0, r1 = getRSSI()
 	 if rssi ~= nil then
 	    D.rssi = rssi
-	    send_aframe()
-	    if (D.mcount % 2) == 0 then
-	       send_gframe()
-	    else
-	       send_sframe()
-	       if D.mcount == 1 then
-		  send_oframe()
-	       elseif D.mcount == 5 then
-		  send_xframe()
+	    if S.onlyTracker then
+	       if (D.mcount % 2) == 0 then
+		  send_gframe()
 	       else
-		  send_nframe()
+		  send_aframe()
+	       end
+	    else
+	       send_aframe()
+	       if (D.mcount % 2) == 0 then
+		  send_gframe()
+	       else
+		  send_sframe()
+		  if D.mcount == 1 then
+		     send_oframe()
+		  elseif D.mcount == 5 then
+		     send_xframe()
+		  else
+		     send_nframe() -- noop for now
+		  end
 	       end
 	    end
 	    D.mcount = (D.mcount + 1) % 10
