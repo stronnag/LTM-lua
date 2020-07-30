@@ -391,11 +391,8 @@ local function run(event)
 	 if rssi ~= nil then
 	    D.rssi = rssi
 	    if S.onlyTracker then
-	       if (D.mcount % 2) == 0 then
-		  send_gframe()
-	       else
-		  send_aframe()
-	       end
+	       send_gframe()
+	       send_aframe()
 	    else
 	       send_aframe()
 	       if (D.mcount % 2) == 0 then
