@@ -31,7 +31,13 @@ The script may be invoked either on an external stimulus e.g. `Telemetry` or on 
 
 Note that the UARTs on the TX16S default to 115200 bps, so set BT devices accordingly.
 
-Note also that in OTX 2.3.9, a bug causes no power to be supplied to the TX16S UARTS; this is fixed in the 2.3.10 nightlies.
+Note that:
+
+* OpenTX 2.3.9, a bug causes no power to be supplied to the TX16S UARTS; this is fixed in the 2.3.10 nightlies.
+* OpenTX 2.3.10, a bug causes the Crossfire FLight Mode not to be set.
+* OpenTX 2.3.11, the baud rate is set incorrectly for LUA ports, rendering the data unreadable.
+
+Currently 2.3.12N420 (nighly build) is working correctly.
 
 ## Configuration
 
