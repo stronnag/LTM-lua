@@ -306,7 +306,7 @@ end
 -- Runtime functions --
 
 local function init()
-   local v, r, m, i, e = getVersion()
+   local vers, radiov, rmaj, rmin, rrev = getVersion()
    lastt = getTime()
    D = {
       volt_id = getTelemetryId("VFAS"),
@@ -342,12 +342,17 @@ local function init()
       fm_id = getTelemetryId("FM")
    }
 
-   if string.sub(r, -4) == "simu" then
+   if string.sub(radiov, -4) == "simu" then
       D.sim = true
    end
 
    S = loadScript("/SCRIPTS/FUNCTIONS/LTM/config.lua")()
    dolog("Tracker only " .. string.format("%s",S.onlyTracker))
+   if rmaj >= 2 and rmin >= 3 and rrev >= 12 then
+      if S.baudrate != 115200 then
+	 setSerialBaudrate(S.baudrate)
+      end
+   end
    -- Testing Crossfire
    -- if D.sim then D.fm_id = 1 end
 

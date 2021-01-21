@@ -30,4 +30,7 @@ S.onlyTracker = false
 -- in the simulator
 S.LOGGER = false
 
+-- 2.3.12 and later
+S.baudrate = 115200
+
 return S
