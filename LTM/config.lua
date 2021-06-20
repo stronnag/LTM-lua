@@ -28,7 +28,7 @@ S.onlyTracker = false
 -- Debugging
 -- Don't touch this unless you appreciate the consequences, particularly when not
 -- in the simulator
-S.LOGGER = false
+-- S.LOGGER = true
 
 -- 2.3.12 and later
 S.baudrate = 115200
