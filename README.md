@@ -37,7 +37,9 @@ Note that:
 * OpenTX 2.3.10, a bug causes the Crossfire Flight Mode not to be set.
 * OpenTX 2.3.11, the baud rate is set incorrectly for LUA ports, rendering the data unreadable.
 
-Currently 2.3.12N420 (nighly build) is working correctly.
+No known issues with
+* OpenTx 2.3.14
+* EdgeTX (2.5.0 and nightly preview builds)
 
 ## Configuration
 
