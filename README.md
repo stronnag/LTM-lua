@@ -36,6 +36,7 @@ Note that:
 * OpenTX 2.3.9, a bug causes no power to be supplied to the TX16S UARTS; this is fixed in the 2.3.10 nightlies.
 * OpenTX 2.3.10, a bug causes the Crossfire Flight Mode not to be set.
 * OpenTX 2.3.11, the baud rate is set incorrectly for LUA ports, rendering the data unreadable.
+* The telemetry provider must be inav for some status related fields.
 
 No known issues with
 * OpenTx 2.3.14
