@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project provides an OpenTX LUA script that outputs LTM (inav's Lightweight Tememetry) on a serial port on an OpenTX radio.
+This project provides an OpenTX LUA script that outputs LTM (inav's Lightweight Tememetry) on a serial port on an OpenTX /EdgeTX radio. It is designed to work with [inav](https://github.com/iNavFlight/inav) as the telemetry provider.
 
 Typical use case:
 
@@ -40,7 +40,7 @@ Note that:
 
 No known issues with
 * OpenTx 2.3.14
-* EdgeTX (2.5.0 and nightly preview builds)
+* EdgeTX (2.5.0 and later)
 
 ## Configuration
 
