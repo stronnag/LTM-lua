@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project provides an OpenTX LUA script that outputs LTM (inav's Lightweight Tememetry) on a serial port on an OpenTX /EdgeTX radio. It is designed to work with [inav](https://github.com/iNavFlight/inav) as the telemetry provider.
+This project provides an OpenTX LUA script that outputs LTM (INAV'S Lightweight Tememetry) on a serial port on an OpenTX /EdgeTX radio. It is designed to work with [INAV](https://github.com/iNavFlight/inav) as the telemetry provider.
 
 Typical use case:
 
@@ -36,7 +36,8 @@ Note that:
 * OpenTX 2.3.9, a bug causes no power to be supplied to the TX16S UARTS; this is fixed in the 2.3.10 nightlies.
 * OpenTX 2.3.10, a bug causes the Crossfire Flight Mode not to be set.
 * OpenTX 2.3.11, the baud rate is set incorrectly for LUA ports, rendering the data unreadable.
-* The telemetry provider must be inav for some status related fields.
+* EdgeTX 2.7.0 and (2.8-dev of early May 2022) cannot set the serial baud rate to other than the default of 115200.
+* The telemetry provider must be INAV for some status related fields.
 
 No known issues with
 * OpenTx 2.3.14
@@ -61,7 +62,7 @@ In the simulator human readable debug messages are generated unconditionally.
 ## Caveats
 
 Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies), internal module.
-Requires smartport (e.g. Frsky D16) compatible RX on the aircraft.
+Requires smartport (e.g. Frsky D16) compatible RX on the aircraft, and EdgeTX.
 
 The scripts have also been tested using Crossfire with Taranis x9D+se, OpenTX 2.3 +luac, full Crossfire TX, Nano RX and the [u360gts antenna tracker](https://github.com/raul-ortega/u360gts).
 
@@ -69,6 +70,6 @@ Other OpenTX compatible radios and other RX radio systems (e.g. R9) are NOT test
 
 ## Copyright and Licence
 
-(c) Jonathan Hudson 2020
+(c) Jonathan Hudson 2020-2022
 
 GPL Version 3 or later.
