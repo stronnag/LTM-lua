@@ -31,6 +31,7 @@ S.onlyTracker = false
 -- S.LOGGER = true
 
 -- 2.3.12 and later
-S.baudrate = 115200
+-- if set to 0 (or less!) then the baud rate will not be changed
+S.baudrate = 0
 
 return S
