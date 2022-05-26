@@ -36,7 +36,11 @@ Note that:
 * OpenTX 2.3.9, a bug causes no power to be supplied to the TX16S UARTS; this is fixed in the 2.3.10 nightlies.
 * OpenTX 2.3.10, a bug causes the Crossfire Flight Mode not to be set.
 * OpenTX 2.3.11, the baud rate is set incorrectly for LUA ports, rendering the data unreadable.
+<<<<<<< HEAD
 * EdgeTX 2.7.1 and (2.8-dev of early May 2022) cannot set the LUA serial baud rate to other than the default of 115200.
+=======
+* EdgeTX 2.7.0 and (2.8-dev of early May 2022) cannot set the serial baud rate to other than the default of 115200.
+>>>>>>> master
 * The telemetry provider must be INAV for some status related fields.
 
 No known issues with
@@ -63,8 +67,13 @@ In the simulator human readable debug messages are generated unconditionally.
 
 ## Caveats
 
+<<<<<<< HEAD
 Last tested successfully on a Radiomaster TX16S with OpenTX 2.3.15 and EdgeTX 2.7.1 and the internal module, FrSky D16 compatible RX (May 2022).
 Requires Smartport or CRSF compatible RX on the aircraft.
+=======
+Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies), internal module.
+Requires smartport (e.g. Frsky D16) compatible RX on the aircraft, and EdgeTX.
+>>>>>>> master
 
 The scripts have also been tested by others using Crossfire with Taranis x9D+se, OpenTX 2.3 +luac, full Crossfire TX, Nano RX and the [u360gts antenna tracker](https://github.com/raul-ortega/u360gts).
 
