@@ -63,13 +63,8 @@ In the simulator human readable debug messages are generated unconditionally.
 
 ## Caveats
 
-<<<<<<< HEAD
 Last tested successfully on a Radiomaster TX16S with OpenTX 2.3.15 and EdgeTX 2.7.1 and the internal module, FrSky D16 compatible RX (May 2022).
 Requires Smartport or CRSF compatible RX on the aircraft.
-=======
-Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies), internal module.
-Requires smartport (e.g. Frsky D16) compatible RX on the aircraft, and EdgeTX.
->>>>>>> master
 
 The scripts have also been tested by others using Crossfire with Taranis x9D+se, OpenTX 2.3 +luac, full Crossfire TX, Nano RX and the [u360gts antenna tracker](https://github.com/raul-ortega/u360gts).
 
