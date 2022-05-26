@@ -40,7 +40,7 @@ Note that:
 * The telemetry provider must be INAV for some status related fields.
 
 No known issues with
-* OpenTx 2.3.15 / 2.3.14
+* OpenTx 2.3.14
 * EdgeTX (other than setting baud rate)
 
 ## Configuration
@@ -63,7 +63,7 @@ In the simulator human readable debug messages are generated unconditionally.
 
 ## Caveats
 
-Last Tested on a Radiomaster TX16S with OpenTX 2.3.15 and EdgeTX 2.7.1 and the internal module, FrSky D16 ompatible RX.
+Last tested successfully on a Radiomaster TX16S with OpenTX 2.3.15 and EdgeTX 2.7.1 and the internal module, FrSky D16 compatible RX (May 2022).
 Requires Smartport or CRSF compatible RX on the aircraft.
 
 The scripts have also been tested by others using Crossfire with Taranis x9D+se, OpenTX 2.3 +luac, full Crossfire TX, Nano RX and the [u360gts antenna tracker](https://github.com/raul-ortega/u360gts).
