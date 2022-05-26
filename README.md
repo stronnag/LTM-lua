@@ -49,6 +49,8 @@ There are a few user editable settings in the file `LTM/config.lua`; currently t
 
 In particular, the `onlyTracker` setting may be used to provide only GPS data for antenna trackers. See the comments in  `LTM/config.lua` for details.
 
+The `S.baudrate` setting may be used to set the baud rate; if `S.baudrate` is `0`, then the device baud rate is unchanged, other the specified baud rate is set. The default value is `0` (use radio setting).
+
 ## Audio
 
 The `audio` directory contains two synthesised voice files, `ltmon.wav` and `ltmoff.wav` that may be placed in `SOUNDS/en` and used to provide audible indications (via Special Functions) that LTM forwarding is enabled / disabled.
@@ -61,12 +63,12 @@ In the simulator human readable debug messages are generated unconditionally.
 
 ## Caveats
 
-Tested on a Radiomaster TX16S with OpenTX 2.3.9 (and 2.3.10 nightlies), internal module.
-Requires smartport (e.g. Frsky D16) compatible RX on the aircraft, and EdgeTX.
+Last Tested on a Radiomaster TX16S with OpenTX 2.3.15 and EdgeTX 2.7.1, internal module.
+Requires Smartport or CRSF compatible RX on the aircraft.
 
-The scripts have also been tested using Crossfire with Taranis x9D+se, OpenTX 2.3 +luac, full Crossfire TX, Nano RX and the [u360gts antenna tracker](https://github.com/raul-ortega/u360gts).
+The scripts have also been tested by others using Crossfire with Taranis x9D+se, OpenTX 2.3 +luac, full Crossfire TX, Nano RX and the [u360gts antenna tracker](https://github.com/raul-ortega/u360gts).
 
-Other OpenTX compatible radios and other RX radio systems (e.g. R9) are NOT tested and as I don't have such hardware, may not work.
+Other OpenTX/EdgeTX compatible radios and other RX radio systems (e.g. R9) are NOT tested and as I don't have such hardware, may not work.
 
 ## Copyright and Licence
 
