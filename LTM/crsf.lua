@@ -73,7 +73,7 @@ function C.get_status_info(D)
       ltmmode = 8
    elseif fm == "HOLD" then
       ltmmode = 9
-   elseif fm == "CRS" or fm == "3CRS" or fm == "CRSH" || fm == "CRUZ" then
+   elseif fm == "CRS" or fm == "3CRS" or fm == "CRSH" or fm == "CRUZ" then
       ltmmode = 18
    elseif fm == "WP" then
       ltmmode = 10
