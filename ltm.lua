@@ -345,7 +345,7 @@ local function init()
       D.sim = true
    end
 
-   S = loadScript("/SCRIPTS/FUNCTIONS/LTM/config.lua")
+   S = loadScript("/SCRIPTS/FUNCTIONS/LTM/config.lua")()
    dolog("Tracker only " .. string.format("%s",S.onlyTracker))
    if rmaj >= 2 and rmin >= 3 and rrev >= 12 then
       if S.baudrate > 0 then
