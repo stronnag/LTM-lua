@@ -1,4 +1,6 @@
-# LTM-lua
+# Migrated to [codeberg](https://codeberg.org/stronnag/LTM-lua)
+
+## LTM-lua
 
 ## Introduction
 
